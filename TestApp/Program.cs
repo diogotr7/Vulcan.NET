@@ -5,12 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Vulcan.NET;
 using System.Drawing;
+using System.Diagnostics;
 
 namespace TestApp
 {
     static class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             if (VulcanKeyboard.Initialize())
             {
@@ -21,7 +22,11 @@ namespace TestApp
                 VulcanKeyboard.SetKeyColor(Key.S, Color.Blue);
                 VulcanKeyboard.SetKeyColor(Key.D, Color.Blue);
 
-                Console.WriteLine("Set colors: " + VulcanKeyboard.Update());
+                var watch = new Stopwatch();
+                watch.Start();
+                bool success = VulcanKeyboard.Update();
+                Console.WriteLine("Set colors: " + success + ", took :" + watch.ElapsedMilliseconds + "ms");
+                watch.Stop();
                 Console.ReadLine();
                 Console.WriteLine("Disconnecting...");
                 VulcanKeyboard.Disconnect();
