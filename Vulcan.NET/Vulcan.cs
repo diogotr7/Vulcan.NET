@@ -15,9 +15,6 @@ namespace Vulcan.NET
         private const uint LedUsagePage = 0x0001;
         private const uint LedUsage = 0x0000;
         private static readonly int[] ProductIds = new int[] { 0x307A, 0x3098 };
-        private static readonly byte[] ColorPacketHeader = new byte[] { 0x00, 0xa1, 0x01, 0x01, 0xb4 };
-        private static readonly byte[] Reset1 = new byte[] { 0x13, 0x08, 0x00, 0x45, 0x00, 0x00, 0x00, 0x00 };
-        private static readonly byte[] Reset2 = new byte[] { 0x15, 0x00, 0x00 };
 
         private static HidDevice _ledDevice;
         private static HidStream _ledStream;
@@ -49,7 +46,7 @@ namespace Vulcan.NET
                 if ((_ctrlDevice?.TryOpen(out _ctrlStream) ?? false) && (_ledDevice?.TryOpen(out _ledStream) ?? false))
                 {
                     if (SendCtrlInitSequence())
-                        return true;
+                        return IsConnected = true;
                 }
                 else
                 {
@@ -98,12 +95,10 @@ namespace Vulcan.NET
         public static bool Update() => WriteColorBuffer();
 
         /// <summary>
-        /// Resets lighting to default and disconnects from the keyboard. Call this last
+        /// Disconnects from the keyboard. Call this last
         /// </summary>
         public static void Disconnect()
         {
-            _ctrlStream?.Write(Reset1);
-            _ctrlStream?.Write(Reset2);
             _ctrlStream?.Close();
             _ledStream?.Close();
             IsConnected = false;
