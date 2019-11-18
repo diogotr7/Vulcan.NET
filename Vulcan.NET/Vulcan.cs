@@ -8,6 +8,9 @@ using HidSharp.Reports.Encodings;
 
 namespace Vulcan.NET
 {
+    /// <summary>
+    /// Static class representing a vulcan Keyboard. Can only interface with one at a time
+    /// </summary>
     public static class VulcanKeyboard
     {
         private const int MaxTries = 100;
@@ -15,6 +18,7 @@ namespace Vulcan.NET
         private const uint LedUsagePage = 0x0001;
         private const uint LedUsage = 0x0000;
         private static readonly int[] ProductIds = new int[] { 0x307A, 0x3098 };
+        private static readonly byte[] ColorPacketHeader = new byte[5] { 0x00, 0xa1, 0x01, 0x01, 0xb4 };
 
         private static HidDevice _ledDevice;
         private static HidStream _ledStream;
@@ -340,8 +344,12 @@ namespace Vulcan.NET
                         0x13, 0x08, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 };
     }
 
+    /// <summary>
+    /// Represents all available keys on the keyboard
+    /// </summary>
     public enum Key
     {
+        #pragma warning disable CS1591//No comments for key definitions
         //Column 1
         ESC = 0,
         TILDE = 1,
