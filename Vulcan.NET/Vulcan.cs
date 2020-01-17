@@ -361,6 +361,7 @@ namespace Vulcan.NET
         ONE = 6,
         Q = 7,
         A = 8,
+        ISO_BACKSLASH = 9,//ISO only
         LEFT_WINDOWS = 10,
         //Column 3
         F1 = 11,
@@ -428,7 +429,7 @@ namespace Vulcan.NET
         F9 = 78,
         EQUALS = 79,
         CLOSE_BRACKET = 80,
-        BACKSLASH = 81,
+        BACKSLASH = 81,//ANSI only
         RIGHT_SHIFT = 82,
         APPLICATION_SELECT = 83,
         //Column 14
@@ -438,6 +439,7 @@ namespace Vulcan.NET
         BACKSPACE = 87,
         ENTER = 88,
         RIGHT_CONTROL = 89,
+        ISO_HASH = 96,//ISO ONLY
         //Column 15
         PRINT_SCREEN = 99,
         INSERT = 100,
