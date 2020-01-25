@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -11,7 +11,7 @@ namespace Vulcan.NET
     /// <summary>
     /// Class representing a vulcan Keyboard. Can only interface with one at a time
     /// </summary>
-    public class VulcanKeyboard
+    public class VulcanKeyboard : IDisposable
     {
         private const int MaxTries = 100;
         private const int VendorId = 0x1E7D;
@@ -112,6 +112,14 @@ namespace Vulcan.NET
         {
             _ctrlStream?.Close();
             _ledStream?.Close();
+        }
+
+        /// <summary>
+        /// A Proxy for the <see cref="Disconnect"/>
+        /// </summary>
+        public void Dispose()
+        {
+            Disconnect();
         }
 
         private bool WriteColorBuffer()
@@ -273,5 +281,6 @@ namespace Vulcan.NET
             Console.WriteLine("Failed to get from usages");
             return null;
         }
+
     }
 }

@@ -13,29 +13,29 @@ namespace TestApp
     {
         static void Main()
         {
-            if (VulcanKeyboard.Initialize())
+            using (VulcanKeyboard keyboard = VulcanKeyboard.Initialize())
             {
+                if (keyboard == null)
+                {
+                    Console.WriteLine("Did not find vulcan!");
+                    Console.ReadLine();
+                    return;
+                }
+
                 Console.WriteLine("Found Vulcan!");
-                VulcanKeyboard.SetColor(Color.Red);
-                VulcanKeyboard.SetKeyColor(Key.W, Color.Blue);
-                VulcanKeyboard.SetKeyColor(Key.A, Color.Blue);
-                VulcanKeyboard.SetKeyColor(Key.S, Color.Blue);
-                VulcanKeyboard.SetKeyColor(Key.D, Color.Blue);
+                keyboard.SetColor(Color.Red);
+                keyboard.SetKeyColor(Key.W, Color.Blue);
+                keyboard.SetKeyColor(Key.A, Color.Blue);
+                keyboard.SetKeyColor(Key.S, Color.Blue);
+                keyboard.SetKeyColor(Key.D, Color.Blue);
 
                 var watch = new Stopwatch();
                 watch.Start();
-                bool success = VulcanKeyboard.Update();
+                bool success = keyboard.Update();
                 Console.WriteLine("Set colors: " + success + ", took :" + watch.ElapsedMilliseconds + "ms");
                 watch.Stop();
                 Console.ReadLine();
                 Console.WriteLine("Disconnecting...");
-                VulcanKeyboard.Disconnect();
-                Console.ReadLine();
-            }
-            else
-            {
-                Console.WriteLine("Did not find vulcan!");
-                Console.ReadLine();
             }
         }
     }
