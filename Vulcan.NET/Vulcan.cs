@@ -9,9 +9,9 @@ using HidSharp.Reports.Encodings;
 namespace Vulcan.NET
 {
     /// <summary>
-    /// Static class representing a vulcan Keyboard. Can only interface with one at a time
+    /// Class representing a vulcan Keyboard. Can only interface with one at a time
     /// </summary>
-    public static class VulcanKeyboard
+    public class VulcanKeyboard
     {
         private const int MaxTries = 100;
         private const int VendorId = 0x1E7D;
@@ -20,54 +20,61 @@ namespace Vulcan.NET
         private static readonly int[] ProductIds = new int[] { 0x307A, 0x3098 };
         private static readonly byte[] ColorPacketHeader = new byte[5] { 0x00, 0xa1, 0x01, 0x01, 0xb4 };
 
-        private static HidDevice _ledDevice;
-        private static HidStream _ledStream;
-        private static HidDevice _ctrlDevice;
-        private static HidStream _ctrlStream;
+        private HidDevice _ledDevice;
+        private HidStream _ledStream;
+        private HidDevice _ctrlDevice;
+        private HidStream _ctrlStream;
         private static readonly byte[] _keyColors = new byte[444];//64 * 6 + 60
 
-        /// <summary>
-        /// Returns true if the keyboard is connected
-        /// </summary>
-        public static bool IsConnected { get; private set; }
+        public VulcanKeyboard(HidDevice ledDevice, HidStream ledStream, HidDevice ctrlDevice, HidStream ctrlStream)
+        {
+            _ledDevice = ledDevice;
+            _ledStream = ledStream;
+            _ctrlDevice = ctrlDevice;
+            _ctrlStream = ctrlStream;
+        }
+
 
         /// <summary>
-        /// Initializes the keyboard. Returns true if initialized successfully
+        /// Initializes the keyboard. Returns a keyboard object if initialized successfully or null otherwise
         /// </summary>
-        public static bool Initialize()
+        public static VulcanKeyboard Initialize()
         {
             var devices = DeviceList.Local.GetHidDevices(vendorID: VendorId)
                         .Where(d => ProductIds.Any(id => id == d.ProductID));
 
             if (!devices.Any())
-                return false;
+                return null;
 
             try
             {
-                _ledDevice = GetFromUsages(devices, LedUsagePage, LedUsage);
-                _ctrlDevice = devices.First(d => d.GetMaxFeatureReportLength() > 50);
+                HidDevice ledDevice = GetFromUsages(devices, LedUsagePage, LedUsage);
+                HidDevice ctrlDevice = devices.First(d => d.GetMaxFeatureReportLength() > 50);
+                HidStream ledStream = null;
+                HidStream ctrlStream = null;
 
-                if ((_ctrlDevice?.TryOpen(out _ctrlStream) ?? false) && (_ledDevice?.TryOpen(out _ledStream) ?? false))
+                if ((ctrlDevice?.TryOpen(out ctrlStream) ?? false) && (ledDevice?.TryOpen(out ledStream) ?? false))
                 {
-                    if (SendCtrlInitSequence())
-                        return IsConnected = true;
+                    VulcanKeyboard kb = new VulcanKeyboard(ledDevice,ledStream,ctrlDevice,ctrlStream);
+                    if (kb.SendCtrlInitSequence())
+                        return kb;
                 }
                 else
                 {
-                    _ctrlStream?.Close();
-                    _ledStream?.Close();
+                    ctrlStream?.Close();
+                    ledStream?.Close();
                 }
             }
             catch
             { }
 
-            return false;
+            return null;
         }
 
         /// <summary>
         /// Sets the whole keyboard to a color
         /// </summary>
-        public static void SetColor(Color clr)
+        public void SetColor(Color clr)
         {
             foreach (Key key in (Key[])Enum.GetValues(typeof(Key)))
                 SetKeyColor(key, clr);
@@ -76,7 +83,7 @@ namespace Vulcan.NET
         /// <summary>
         /// Set the colors of all the keys in the dictionary
         /// </summary>
-        public static void SetColors(Dictionary<Key, Color> keyColors)
+        public void SetColors(Dictionary<Key, Color> keyColors)
         {
             foreach (var key in keyColors)
                 SetKeyColor(key.Key, key.Value);
@@ -85,7 +92,7 @@ namespace Vulcan.NET
         /// <summary>
         /// Sets a given key to a given color
         /// </summary>
-        public static void SetKeyColor(Key key, Color clr)
+        public void SetKeyColor(Key key, Color clr)
         {
             int offset = ((int)key / 12 * 36) + ((int)key % 12);
             _keyColors[offset + 0] = clr.R;
@@ -96,19 +103,18 @@ namespace Vulcan.NET
         /// <summary>
         /// Writes data to the keyboard
         /// </summary>
-        public static bool Update() => WriteColorBuffer();
+        public bool Update() => WriteColorBuffer();
 
         /// <summary>
         /// Disconnects from the keyboard. Call this last
         /// </summary>
-        public static void Disconnect()
+        public void Disconnect()
         {
             _ctrlStream?.Close();
             _ledStream?.Close();
-            IsConnected = false;
         }
 
-        private static bool WriteColorBuffer()
+        private bool WriteColorBuffer()
         {
             //structure of the data: 
             //header *5
@@ -162,7 +168,7 @@ namespace Vulcan.NET
             }
         }
 
-        private static bool SendCtrlInitSequence()
+        private bool SendCtrlInitSequence()
         {
             var result =
                 GetCtrlReport(0x0f) &&
@@ -190,7 +196,7 @@ namespace Vulcan.NET
             return result;
         }
 
-        private static bool GetCtrlReport(byte report_id)
+        private bool GetCtrlReport(byte report_id)
         {
             int size = _ctrlDevice.GetMaxFeatureReportLength();
             var buf = new byte[size];
@@ -206,7 +212,7 @@ namespace Vulcan.NET
             }
         }
 
-        private static bool SetCtrlReport(byte[] reportBuffer)
+        private bool SetCtrlReport(byte[] reportBuffer)
         {
             try
             {
@@ -219,7 +225,7 @@ namespace Vulcan.NET
             }
         }
 
-        private static bool WaitCtrlDevice()
+        private bool WaitCtrlDevice()
         {
             int size = _ctrlDevice.GetMaxFeatureReportLength();
             byte[] buf = new byte[size];
