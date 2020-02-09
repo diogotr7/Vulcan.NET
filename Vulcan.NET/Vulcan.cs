@@ -20,11 +20,11 @@ namespace Vulcan.NET
         private static readonly int[] ProductIds = new int[] { 0x307A, 0x3098 };
         private static readonly byte[] ColorPacketHeader = new byte[5] { 0x00, 0xa1, 0x01, 0x01, 0xb4 };
 
-        private HidDevice _ledDevice;
-        private HidStream _ledStream;
-        private HidDevice _ctrlDevice;
-        private HidStream _ctrlStream;
-        private static readonly byte[] _keyColors = new byte[444];//64 * 6 + 60
+        private readonly HidDevice _ledDevice;
+        private readonly HidStream _ledStream;
+        private readonly HidDevice _ctrlDevice;
+        private readonly HidStream _ctrlStream;
+        private readonly byte[] _keyColors = new byte[444];//64 * 6 + 60
 
         public VulcanKeyboard(HidDevice ledDevice, HidStream ledStream, HidDevice ctrlDevice, HidStream ctrlStream)
         {
@@ -33,7 +33,6 @@ namespace Vulcan.NET
             _ctrlDevice = ctrlDevice;
             _ctrlStream = ctrlStream;
         }
-
 
         /// <summary>
         /// Initializes the keyboard. Returns a keyboard object if initialized successfully or null otherwise
@@ -71,6 +70,15 @@ namespace Vulcan.NET
             return null;
         }
 
+        /// <summary>
+        /// A Proxy for the <see cref="Disconnect"/>
+        /// </summary>
+        public void Dispose()
+        {
+            Disconnect();
+        }
+
+        #region Public Methods
         /// <summary>
         /// Sets the whole keyboard to a color
         /// </summary>
@@ -114,14 +122,9 @@ namespace Vulcan.NET
             _ledStream?.Close();
         }
 
-        /// <summary>
-        /// A Proxy for the <see cref="Disconnect"/>
-        /// </summary>
-        public void Dispose()
-        {
-            Disconnect();
-        }
+        #endregion
 
+        #region Private Hid Methods
         private bool WriteColorBuffer()
         {
             //structure of the data: 
@@ -254,6 +257,7 @@ namespace Vulcan.NET
             }
             return false;
         }
+        #endregion
 
         private static HidDevice GetFromUsages(IEnumerable<HidDevice> devices, uint usagePage, uint usage)
         {
@@ -268,7 +272,6 @@ namespace Vulcan.NET
                     {
                         if (usages.Any(l => l.ItemType == ItemType.Local && l.DataValue == usage))
                         {
-                            Console.WriteLine("Found device with correct usages:" + dev);
                             return dev;
                         }
                     }
@@ -278,9 +281,7 @@ namespace Vulcan.NET
                     //failed to get the report descriptor, skip
                 }
             }
-            Console.WriteLine("Failed to get from usages");
             return null;
         }
-
     }
 }
