@@ -26,7 +26,7 @@ namespace Vulcan.NET
         private readonly HidStream _ctrlStream;
         private readonly byte[] _keyColors = new byte[444];//64 * 6 + 60
 
-        public VulcanKeyboard(HidDevice ledDevice, HidStream ledStream, HidDevice ctrlDevice, HidStream ctrlStream)
+        private VulcanKeyboard(HidDevice ledDevice, HidStream ledStream, HidDevice ctrlDevice, HidStream ctrlStream)
         {
             _ledDevice = ledDevice;
             _ledStream = ledStream;
@@ -54,7 +54,7 @@ namespace Vulcan.NET
 
                 if ((ctrlDevice?.TryOpen(out ctrlStream) ?? false) && (ledDevice?.TryOpen(out ledStream) ?? false))
                 {
-                    VulcanKeyboard kb = new VulcanKeyboard(ledDevice,ledStream,ctrlDevice,ctrlStream);
+                    VulcanKeyboard kb = new VulcanKeyboard(ledDevice, ledStream, ctrlDevice, ctrlStream);
                     if (kb.SendCtrlInitSequence())
                         return kb;
                 }
@@ -249,7 +249,6 @@ namespace Vulcan.NET
             }
             return false;
         }
-        #endregion
 
         private static HidDevice GetFromUsages(IEnumerable<HidDevice> devices, uint usagePage, uint usage)
         {
@@ -275,6 +274,7 @@ namespace Vulcan.NET
             }
             return null;
         }
+        #endregion
 
         #region IDisposable Support
         /// <summary>
