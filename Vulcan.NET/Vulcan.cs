@@ -11,7 +11,7 @@ namespace Vulcan.NET
     /// <summary>
     /// Class representing a vulcan Keyboard. Can only interface with one at a time
     /// </summary>
-    public class VulcanKeyboard : IDisposable
+    public sealed class VulcanKeyboard : IDisposable
     {
         private const int MaxTries = 100;
         private const int VendorId = 0x1E7D;
@@ -68,14 +68,6 @@ namespace Vulcan.NET
             { }
 
             return null;
-        }
-
-        /// <summary>
-        /// A Proxy for the <see cref="Disconnect"/>
-        /// </summary>
-        public void Dispose()
-        {
-            Disconnect();
         }
 
         #region Public Methods
@@ -283,5 +275,12 @@ namespace Vulcan.NET
             }
             return null;
         }
+
+        #region IDisposable Support
+        /// <summary>
+        /// Disconnects the keyboard when disposing
+        /// </summary>
+        public void Dispose() => Disconnect();
+        #endregion
     }
 }
