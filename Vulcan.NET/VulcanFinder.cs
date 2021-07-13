@@ -1,5 +1,4 @@
 ﻿using HidSharp;
-using HidSharp.Reports.Encodings;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,20 +17,24 @@ namespace Vulcan.NET
 
         public static IEnumerable<IVulcanKeyboard> FindKeyboards()
         {
-            var devices = DeviceList.Local.GetHidDevices(vendorID: VendorId);
+            IEnumerable<HidDevice> devices = DeviceList.Local.GetHidDevices(vendorID: VendorId);
 
             if (!devices.Any())
-                yield break;
-
-            foreach (var (pid, kbType) in ProductIds)
             {
-                var devicesWithPid = devices.Where(d => d.ProductID == pid);
+                yield break;
+            }
+
+            foreach ((int pid, KeyboardType kbType) in ProductIds)
+            {
+                IEnumerable<HidDevice> devicesWithPid = devices.Where(d => d.ProductID == pid);
                 if (!devicesWithPid.Any())
+                {
                     continue;
+                }
 
                 switch (kbType)
                 {
-                    case KeyboardType.Fullsize: 
+                    case KeyboardType.Fullsize:
                         yield return new FullsizeKeyboard(devicesWithPid);
                         break;
                     case KeyboardType.Tenkeyless:

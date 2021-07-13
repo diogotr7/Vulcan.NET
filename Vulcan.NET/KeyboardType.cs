@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Vulcan.NET
+﻿namespace Vulcan.NET
 {
     public enum KeyboardType
     {

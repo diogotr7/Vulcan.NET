@@ -2,7 +2,6 @@
 using HidSharp.Reports.Encodings;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Threading;
 
@@ -31,13 +30,19 @@ namespace Vulcan.NET
             _ledDevice = GetFromUsages(devices, LedUsagePage, LedUsage);
 
             if (_ctrlDevice == null || _ledDevice == null)
+            {
                 throw new Exception("Failed to find expected devices from report length and usages");
+            }
 
-            if(!_ctrlDevice.TryOpen(out _ctrlStream) || !_ledDevice.TryOpen(out _ledStream))
+            if (!_ctrlDevice.TryOpen(out _ctrlStream) || !_ledDevice.TryOpen(out _ledStream))
+            {
                 throw new Exception("Failed to open devices");
+            }
 
-            if(!SendCtrlInitSequence())
+            if (!SendCtrlInitSequence())
+            {
                 throw new Exception("Failed to send initialization sequence");
+            }
 
             IsConnected = true;
         }
@@ -45,13 +50,17 @@ namespace Vulcan.NET
         public void SetColor(byte r, byte g, byte b)
         {
             foreach (Key key in FullSizeKeyMapping.Mapping.Keys)
+            {
                 SetKeyColor(key, r, g, b);
+            }
         }
 
         public void SetKeyColor(Key key, byte r, byte g, byte b)
         {
-            if (!FullSizeKeyMapping.Mapping.TryGetValue(key, out var keyIndex))
+            if (!FullSizeKeyMapping.Mapping.TryGetValue(key, out int keyIndex))
+            {
                 return;
+            }
 
             int offset = (keyIndex / 12 * 36) + (keyIndex % 12);
             _keyColors[offset + 0] = r;
@@ -121,7 +130,7 @@ namespace Vulcan.NET
 
         private bool SendCtrlInitSequence()
         {
-            var result =
+            bool result =
                 GetCtrlReport(0x0f) &&
                 SetCtrlReport(FullsizeCtrlReports._0x15) &&
                 WaitCtrlDevice() &&
@@ -150,7 +159,7 @@ namespace Vulcan.NET
         private bool GetCtrlReport(byte report_id)
         {
             int size = _ctrlDevice.GetMaxFeatureReportLength();
-            var buf = new byte[size];
+            byte[] buf = new byte[size];
             buf[0] = report_id;
             try
             {
@@ -188,7 +197,9 @@ namespace Vulcan.NET
                 {
                     _ctrlStream.GetFeature(buf);
                     if (buf[1] == 0x01)
+                    {
                         return true;
+                    }
                 }
                 catch
                 {
@@ -200,12 +211,12 @@ namespace Vulcan.NET
 
         private static HidDevice GetFromUsages(IEnumerable<HidDevice> devices, uint usagePage, uint usage)
         {
-            foreach (var dev in devices)
+            foreach (HidDevice dev in devices)
             {
                 try
                 {
-                    var raw = dev.GetRawReportDescriptor();
-                    var usages = EncodedItem.DecodeItems(raw, 0, raw.Length).Where(t => t.TagForGlobal == GlobalItemTag.UsagePage);
+                    byte[] raw = dev.GetRawReportDescriptor();
+                    IEnumerable<EncodedItem> usages = EncodedItem.DecodeItems(raw, 0, raw.Length).Where(t => t.TagForGlobal == GlobalItemTag.UsagePage);
 
                     if (usages.Any(g => g.ItemType == ItemType.Global && g.DataValue == usagePage))
                     {
