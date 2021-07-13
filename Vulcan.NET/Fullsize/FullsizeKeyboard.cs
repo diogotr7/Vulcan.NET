@@ -1,23 +1,18 @@
-﻿using System;
+﻿using HidSharp;
+using HidSharp.Reports.Encodings;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
-using HidSharp;
-using HidSharp.Reports.Encodings;
 
 namespace Vulcan.NET
 {
-    /// <summary>
-    /// Class representing a vulcan Keyboard. Can only interface with one at a time
-    /// </summary>
-    public sealed class VulcanKeyboard : IDisposable
+    public class FullsizeKeyboard : IVulcanKeyboard
     {
-        private const int MaxTries = 100;
-        private const int VendorId = 0x1E7D;
         private const uint LedUsagePage = 0x0001;
         private const uint LedUsage = 0x0000;
-        private static readonly int[] ProductIds = new int[] { 0x307A, 0x3098 };
+        private const int MaxTries = 100;
         private static readonly byte[] ColorPacketHeader = new byte[5] { 0x00, 0xa1, 0x01, 0x01, 0xb4 };
 
         private readonly HidDevice _ledDevice;
@@ -26,98 +21,45 @@ namespace Vulcan.NET
         private readonly HidStream _ctrlStream;
         private readonly byte[] _keyColors = new byte[444];//64 * 6 + 60
 
-        private VulcanKeyboard(HidDevice ledDevice, HidStream ledStream, HidDevice ctrlDevice, HidStream ctrlStream)
+        public KeyboardType KeyboardType => KeyboardType.Fullsize;
+
+        public bool IsConnected { get; private set; }
+
+        internal FullsizeKeyboard(IEnumerable<HidDevice> devices)
         {
-            _ledDevice = ledDevice;
-            _ledStream = ledStream;
-            _ctrlDevice = ctrlDevice;
-            _ctrlStream = ctrlStream;
+            _ctrlDevice = devices.FirstOrDefault(d => d.GetMaxFeatureReportLength() > 50);
+            _ledDevice = GetFromUsages(devices, LedUsagePage, LedUsage);
+
+            if (_ctrlDevice == null || _ledDevice == null)
+                throw new Exception("Failed to find expected devices from report length and usages");
+
+            if(!_ctrlDevice.TryOpen(out _ctrlStream) || !_ledDevice.TryOpen(out _ledStream))
+                throw new Exception("Failed to open devices");
+
+            if(!SendCtrlInitSequence())
+                throw new Exception("Failed to send initialization sequence");
+
+            IsConnected = true;
         }
 
-        /// <summary>
-        /// Initializes the keyboard. Returns a keyboard object if initialized successfully or null otherwise
-        /// </summary>
-        public static VulcanKeyboard Initialize()
+        public void SetColor(byte r, byte g, byte b)
         {
-            var devices = DeviceList.Local.GetHidDevices(vendorID: VendorId)
-                        .Where(d => ProductIds.Any(id => id == d.ProductID));
-
-            if (!devices.Any())
-                return null;
-
-            try
-            {
-                HidDevice ledDevice = GetFromUsages(devices, LedUsagePage, LedUsage);
-                HidDevice ctrlDevice = devices.First(d => d.GetMaxFeatureReportLength() > 50);
-                HidStream ledStream = null;
-                HidStream ctrlStream = null;
-
-                if ((ctrlDevice?.TryOpen(out ctrlStream) ?? false) && (ledDevice?.TryOpen(out ledStream) ?? false))
-                {
-                    VulcanKeyboard kb = new VulcanKeyboard(ledDevice, ledStream, ctrlDevice, ctrlStream);
-                    if (kb.SendCtrlInitSequence())
-                        return kb;
-                }
-                else
-                {
-                    ctrlStream?.Close();
-                    ledStream?.Close();
-                }
-            }
-            catch
-            { }
-
-            return null;
+            foreach (Key key in FullSizeKeyMapping.Mapping.Keys)
+                SetKeyColor(key, r, g, b);
         }
 
-        #region Public Methods
-        /// <summary>
-        /// Sets the whole keyboard to a color
-        /// </summary>
-        public void SetColor(Color clr)
+        public void SetKeyColor(Key key, byte r, byte g, byte b)
         {
-            foreach (Key key in (Key[])Enum.GetValues(typeof(Key)))
-                SetKeyColor(key, clr);
+            if (!FullSizeKeyMapping.Mapping.TryGetValue(key, out var keyIndex))
+                return;
+
+            int offset = (keyIndex / 12 * 36) + (keyIndex % 12);
+            _keyColors[offset + 0] = r;
+            _keyColors[offset + 12] = g;
+            _keyColors[offset + 24] = b;
         }
 
-        /// <summary>
-        /// Set the colors of all the keys in the dictionary
-        /// </summary>
-        public void SetColors(Dictionary<Key, Color> keyColors)
-        {
-            foreach (var key in keyColors)
-                SetKeyColor(key.Key, key.Value);
-        }
-
-        /// <summary>
-        /// Sets a given key to a given color
-        /// </summary>
-        public void SetKeyColor(Key key, Color clr)
-        {
-            int offset = ((int)key / 12 * 36) + ((int)key % 12);
-            _keyColors[offset + 0] = clr.R;
-            _keyColors[offset + 12] = clr.G;
-            _keyColors[offset + 24] = clr.B;
-        }
-
-        /// <summary>
-        /// Writes data to the keyboard
-        /// </summary>
-        public bool Update() => WriteColorBuffer();
-
-        /// <summary>
-        /// Disconnects from the keyboard. Call this last
-        /// </summary>
-        public void Disconnect()
-        {
-            _ctrlStream?.Close();
-            _ledStream?.Close();
-        }
-
-        #endregion
-
-        #region Private Hid Methods
-        private bool WriteColorBuffer()
+        public bool Update()
         {
             //structure of the data: 
             //header *5
@@ -166,32 +108,38 @@ namespace Vulcan.NET
             }
             catch
             {
-                Disconnect();
                 return false;
             }
+        }
+
+        public void Dispose()
+        {
+            _ctrlStream?.Close();
+            _ledStream?.Close();
+            IsConnected = false;
         }
 
         private bool SendCtrlInitSequence()
         {
             var result =
                 GetCtrlReport(0x0f) &&
-                SetCtrlReport(CtrlReports._0x15) &&
+                SetCtrlReport(FullsizeCtrlReports._0x15) &&
                 WaitCtrlDevice() &&
-                SetCtrlReport(CtrlReports._0x05) &&
+                SetCtrlReport(FullsizeCtrlReports._0x05) &&
                 WaitCtrlDevice() &&
-                SetCtrlReport(CtrlReports._0x07) &&
+                SetCtrlReport(FullsizeCtrlReports._0x07) &&
                 WaitCtrlDevice() &&
-                SetCtrlReport(CtrlReports._0x0a) &&
+                SetCtrlReport(FullsizeCtrlReports._0x0a) &&
                 WaitCtrlDevice() &&
-                SetCtrlReport(CtrlReports._0x0b) &&
+                SetCtrlReport(FullsizeCtrlReports._0x0b) &&
                 WaitCtrlDevice() &&
-                SetCtrlReport(CtrlReports._0x06) &&
+                SetCtrlReport(FullsizeCtrlReports._0x06) &&
                 WaitCtrlDevice() &&
-                SetCtrlReport(CtrlReports._0x09) &&
+                SetCtrlReport(FullsizeCtrlReports._0x09) &&
                 WaitCtrlDevice() &&
-                SetCtrlReport(CtrlReports._0x0d) &&
+                SetCtrlReport(FullsizeCtrlReports._0x0d) &&
                 WaitCtrlDevice() &&
-                SetCtrlReport(CtrlReports._0x13) &&
+                SetCtrlReport(FullsizeCtrlReports._0x13) &&
                 WaitCtrlDevice();
 
             _ctrlStream?.Close();
@@ -263,6 +211,7 @@ namespace Vulcan.NET
                     {
                         if (usages.Any(l => l.ItemType == ItemType.Local && l.DataValue == usage))
                         {
+                            Console.WriteLine("Found device with correct usages:" + dev);
                             return dev;
                         }
                     }
@@ -272,15 +221,8 @@ namespace Vulcan.NET
                     //failed to get the report descriptor, skip
                 }
             }
+            Console.WriteLine("Failed to get from usages");
             return null;
         }
-        #endregion
-
-        #region IDisposable Support
-        /// <summary>
-        /// Disconnects the keyboard when disposing
-        /// </summary>
-        public void Dispose() => Disconnect();
-        #endregion
     }
 }
