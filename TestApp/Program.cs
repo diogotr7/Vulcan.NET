@@ -17,6 +17,7 @@ namespace TestApp
             if (!keyboards.Any())
             {
                 Console.WriteLine("Couldn't find any keyboards, exiting.");
+                Console.ReadLine();
                 return;
             }
             foreach (var keyboard in keyboards)
