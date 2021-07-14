@@ -1,6 +1,6 @@
 ﻿namespace Vulcan.NET
 {
-    internal static class CtrlReports
+    internal static class FullsizeCtrlReports
     {
         internal static readonly byte[] _0x15 = new byte[] {
             0x15, 0x00, 0x01 };

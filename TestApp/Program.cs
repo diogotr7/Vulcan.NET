@@ -13,29 +13,32 @@ namespace TestApp
     {
         static void Main()
         {
-            using (VulcanKeyboard keyboard = VulcanKeyboard.Initialize())
+            var keyboards = VulcanFinder.FindKeyboards();
+            if (!keyboards.Any())
             {
-                if (keyboard == null)
-                {
-                    Console.WriteLine("Did not find vulcan!");
-                    Console.ReadLine();
-                    return;
-                }
+                Console.WriteLine("Couldn't find any keyboards, exiting.");
+                Console.ReadLine();
+                return;
+            }
+            foreach (var keyboard in keyboards)
+            {
+                Console.WriteLine($"Found keyboard of type {keyboard.KeyboardType}");
 
-                Console.WriteLine("Found Vulcan!");
-                keyboard.SetColor(Color.Red);
-                keyboard.SetKeyColor(Key.W, Color.Blue);
-                keyboard.SetKeyColor(Key.A, Color.Blue);
-                keyboard.SetKeyColor(Key.S, Color.Blue);
-                keyboard.SetKeyColor(Key.D, Color.Blue);
+                keyboard.SetColor(255, 0, 0);
+                keyboard.SetKeyColor(Key.W, 0, 0, 255);
+                keyboard.SetKeyColor(Key.A, 0, 0, 255);
+                keyboard.SetKeyColor(Key.S, 0, 0, 255);
+                keyboard.SetKeyColor(Key.D, 0, 0, 255);
 
-                var watch = new Stopwatch();
-                watch.Start();
+                var sw = Stopwatch.StartNew();
                 bool success = keyboard.Update();
-                Console.WriteLine("Set colors: " + success + ", took :" + watch.ElapsedMilliseconds + "ms");
-                watch.Stop();
+                sw.Stop();
+
+                Console.WriteLine("Set colors: " + success + ", took :" + sw.ElapsedMilliseconds + "ms");
+
                 Console.ReadLine();
                 Console.WriteLine("Disconnecting...");
+                keyboard.Dispose();
             }
         }
     }
