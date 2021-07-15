@@ -3,16 +3,22 @@ using System.Collections.Generic;
 
 namespace Vulcan.NET
 {
+    /// <summary>
+    /// Represents a tenkeyless vulcan keyboard. Vulcan TKL
+    /// </summary>
     public sealed class TenkeylessKeyboard : AbstractVulcanKeyboard
     {
+        /// <inheritdoc/>
         public override KeyboardType KeyboardType => KeyboardType.Tenkeyless;
 
+        /// <inheritdoc/>
         protected override Dictionary<Key, int> Mapping => TenkeylessKeyMapping.Mapping;
 
         internal TenkeylessKeyboard(HidDevice ctrlDevice, HidDevice ledDevice)
             : base(ctrlDevice, ledDevice)
         { }
 
+        /// <inheritdoc/>
         protected override bool Initialize()
         {
             return

@@ -1,13 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Vulcan.NET
 {
+    /// <summary>
+    /// Represents a Vulcan Keyboard
+    /// </summary>
     public interface IVulcanKeyboard : IDisposable
     {
         /// <summary>
         /// Which keyboard model is represented by the object. Either fullsize or tkl.
         /// </summary>
         KeyboardType KeyboardType { get; }
+
+        /// <summary>
+        /// Contains all the keys present on the keyboard.
+        /// </summary>
+        IEnumerable<Key> Keys { get; }
 
         /// <summary>
         /// Connection status of the keyboard

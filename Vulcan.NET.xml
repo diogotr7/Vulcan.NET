@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Vulcan.NET</name>
+    </assembly>
+    <members>
+        <member name="T:Vulcan.NET.AbstractVulcanKeyboard">
+            <inheritdoc/>
+        </member>
+        <member name="P:Vulcan.NET.AbstractVulcanKeyboard.Keys">
+            <inheritdoc/>
+        </member>
+        <member name="P:Vulcan.NET.AbstractVulcanKeyboard.Mapping">
+            <inheritdoc/>
+        </member>
+        <member name="P:Vulcan.NET.AbstractVulcanKeyboard.KeyboardType">
+            <inheritdoc/>
+        </member>
+        <member name="P:Vulcan.NET.AbstractVulcanKeyboard.IsConnected">
+            <inheritdoc/>
+        </member>
+        <member name="M:Vulcan.NET.AbstractVulcanKeyboard.#ctor(HidSharp.HidDevice,HidSharp.HidDevice)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Vulcan.NET.AbstractVulcanKeyboard.SetColor(System.Byte,System.Byte,System.Byte)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Vulcan.NET.AbstractVulcanKeyboard.SetKeyColor(Vulcan.NET.Key,System.Byte,System.Byte,System.Byte)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Vulcan.NET.AbstractVulcanKeyboard.Update">
+            <inheritdoc/>
+        </member>
+        <member name="M:Vulcan.NET.AbstractVulcanKeyboard.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="M:Vulcan.NET.AbstractVulcanKeyboard.Initialize">
+            <inheritdoc/>
+        </member>
+        <member name="M:Vulcan.NET.AbstractVulcanKeyboard.GetCtrlReport(System.Byte)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Vulcan.NET.AbstractVulcanKeyboard.SetCtrlReport(System.Byte[])">
+            <inheritdoc/>
+        </member>
+        <member name="M:Vulcan.NET.AbstractVulcanKeyboard.WaitCtrlDevice">
+            <inheritdoc/>
+        </member>
+        <member name="T:Vulcan.NET.FullsizeKeyboard">
+            <summary>
+            Represents a full size vulcan keyboard. Vulcan 100/120
+            </summary>
+        </member>
+        <member name="P:Vulcan.NET.FullsizeKeyboard.KeyboardType">
+            <inheritdoc/>
+        </member>
+        <member name="P:Vulcan.NET.FullsizeKeyboard.Mapping">
+            <inheritdoc/>
+        </member>
+        <member name="M:Vulcan.NET.FullsizeKeyboard.Initialize">
+            <inheritdoc/>
+        </member>
+        <member name="T:Vulcan.NET.IVulcanKeyboard">
+            <summary>
+            Represents a Vulcan Keyboard
+            </summary>
+        </member>
+        <member name="P:Vulcan.NET.IVulcanKeyboard.KeyboardType">
+            <summary>
+            Which keyboard model is represented by the object. Either fullsize or tkl.
+            </summary>
+        </member>
+        <member name="P:Vulcan.NET.IVulcanKeyboard.Keys">
+            <summary>
+            Contains all the keys present on the keyboard.
+            </summary>
+        </member>
+        <member name="P:Vulcan.NET.IVulcanKeyboard.IsConnected">
+            <summary>
+            Connection status of the keyboard
+            </summary>
+        </member>
+        <member name="M:Vulcan.NET.IVulcanKeyboard.SetColor(System.Byte,System.Byte,System.Byte)">
+            <summary>
+            Sets the whole keyboard to a color
+            </summary>
+        </member>
+        <member name="M:Vulcan.NET.IVulcanKeyboard.SetKeyColor(Vulcan.NET.Key,System.Byte,System.Byte,System.Byte)">
+            <summary>
+            Sets a given key to a given color
+            </summary>
+        </member>
+        <member name="M:Vulcan.NET.IVulcanKeyboard.Update">
+            <summary>
+            Writes data to the keyboard
+            </summary>
+        </member>
+        <member name="T:Vulcan.NET.Key">
+            <summary>
+            Represents all available keys on the keyboard
+            </summary>
+        </member>
+        <member name="T:Vulcan.NET.KeyboardType">
+            <summary>
+            Keyboard type to differentiate between the supported models.
+            </summary>
+        </member>
+        <member name="F:Vulcan.NET.KeyboardType.Fullsize">
+            <summary>
+            Fullsize keyboard, Vulkan 100/120.
+            </summary>
+        </member>
+        <member name="F:Vulcan.NET.KeyboardType.Tenkeyless">
+            <summary>
+            Tenkeyless keyboard, Vulkan TKL.
+            </summary>
+        </member>
+        <member name="T:Vulcan.NET.TenkeylessKeyboard">
+            <summary>
+            Represents a tenkeyless vulcan keyboard. Vulcan TKL
+            </summary>
+        </member>
+        <member name="P:Vulcan.NET.TenkeylessKeyboard.KeyboardType">
+            <inheritdoc/>
+        </member>
+        <member name="P:Vulcan.NET.TenkeylessKeyboard.Mapping">
+            <inheritdoc/>
+        </member>
+        <member name="M:Vulcan.NET.TenkeylessKeyboard.Initialize">
+            <inheritdoc/>
+        </member>
+        <member name="T:Vulcan.NET.VulcanFinder">
+            <summary>
+            Static class to find all connected keyboards.
+            </summary>
+        </member>
+        <member name="M:Vulcan.NET.VulcanFinder.FindKeyboards">
+            <summary>
+            Returns an enumeration of all keyboards found.
+            </summary>
+        </member>
+    </members>
+</doc>

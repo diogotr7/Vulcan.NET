@@ -5,6 +5,7 @@
     /// </summary>
     public enum Key
     {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         ESC,
         TILDE,
         TAB,
@@ -112,5 +113,6 @@
         NUM_PLUS,
         NUM_ENTER,
         MUTE
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

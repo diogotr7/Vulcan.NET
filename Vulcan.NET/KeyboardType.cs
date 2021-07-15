@@ -1,9 +1,18 @@
 ﻿namespace Vulcan.NET
 {
+    /// <summary>
+    /// Keyboard type to differentiate between the supported models.
+    /// </summary>
     public enum KeyboardType
     {
-        //TODO: better names for these
+        /// <summary>
+        /// Fullsize keyboard, Vulkan 100/120.
+        /// </summary>
         Fullsize,
+
+        /// <summary>
+        /// Tenkeyless keyboard, Vulkan TKL.
+        /// </summary>
         Tenkeyless
     }
 }

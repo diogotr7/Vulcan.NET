@@ -5,19 +5,27 @@ using System.Linq;
 
 namespace Vulcan.NET
 {
+    /// <summary>
+    /// Static class to find all connected keyboards.
+    /// </summary>
     public static class VulcanFinder
     {
         private const int VendorId = 0x1E7D;
         private const uint LedUsagePage = 0x0001;
         private const uint LedUsage = 0x0000;
 
-        private static readonly List<(int, KeyboardType)> ProductIds = new List<(int, KeyboardType)>
+        private static readonly List<(int, KeyboardType)> KeyboardDefinitions = new List<(int, KeyboardType)>
         {
-            (0x307A, KeyboardType.Fullsize),
-            (0x3098, KeyboardType.Fullsize),
-            (0x2fee, KeyboardType.Tenkeyless)
+            (0x307A, KeyboardType.Fullsize),//100/120
+            (0x3098, KeyboardType.Fullsize),//100/120
+            (0x2fee, KeyboardType.Tenkeyless)//tkl
+            //tkl pro 0x311a
+            //pro     0x30f7
         };
 
+        /// <summary>
+        /// Returns an enumeration of all keyboards found.
+        /// </summary>
         public static IEnumerable<IVulcanKeyboard> FindKeyboards()
         {
             IEnumerable<HidDevice> devices = DeviceList.Local.GetHidDevices(vendorID: VendorId);
@@ -28,7 +36,7 @@ namespace Vulcan.NET
 
             foreach (var distinctDeviceEntries in devices.GroupBy(d => d.DevicePath))
             {
-                foreach ((int pid, KeyboardType kbType) in ProductIds)
+                foreach ((int pid, KeyboardType kbType) in KeyboardDefinitions)
                 {
                     //these have the same pid
                     if (!distinctDeviceEntries.Any(dde => dde.ProductID == pid))
@@ -37,7 +45,7 @@ namespace Vulcan.NET
                     }
 
                     var ctrlDevice = distinctDeviceEntries.FirstOrDefault(d => d.GetMaxFeatureReportLength() > 50);
-                    var ledDevice = GetFromUsages(devices, LedUsagePage, LedUsage);
+                    var ledDevice = distinctDeviceEntries.FirstOrDefault(d => d.VerifyUsageAndUsagePage(LedUsagePage, LedUsage));
 
                     if (ctrlDevice == null || ledDevice == null)
                         continue;
@@ -55,29 +63,21 @@ namespace Vulcan.NET
             }
         }
 
-        private static HidDevice GetFromUsages(IEnumerable<HidDevice> devices, uint usagePage, uint usage)
+        private static bool VerifyUsageAndUsagePage(this HidDevice device, uint usagePage, uint usage)
         {
-            foreach (HidDevice dev in devices)
+            try
             {
-                try
-                {
-                    byte[] raw = dev.GetRawReportDescriptor();
-                    IEnumerable<EncodedItem> usages = EncodedItem.DecodeItems(raw, 0, raw.Length).Where(t => t.TagForGlobal == GlobalItemTag.UsagePage);
+                var rawReportDescriptor = device.GetRawReportDescriptor();
 
-                    if (usages.Any(g => g.ItemType == ItemType.Global && g.DataValue == usagePage))
-                    {
-                        if (usages.Any(l => l.ItemType == ItemType.Local && l.DataValue == usage))
-                        {
-                            return dev;
-                        }
-                    }
-                }
-                catch
-                {
-                    //failed to get the report descriptor, skip
-                }
+                var items = EncodedItem.DecodeItems(rawReportDescriptor, 0, rawReportDescriptor.Length).Where(t => t.TagForGlobal == GlobalItemTag.UsagePage);
+
+                return items.Any(item => item.ItemType == ItemType.Global && item.DataValue == usagePage)
+                    && items.Any(item => item.ItemType == ItemType.Local && item.DataValue == usage);
             }
-            return null;
+            catch
+            {
+                return false;
+            }
         }
     }
 }

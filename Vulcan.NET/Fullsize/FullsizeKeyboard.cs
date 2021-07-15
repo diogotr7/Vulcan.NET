@@ -3,16 +3,22 @@ using System.Collections.Generic;
 
 namespace Vulcan.NET
 {
+    /// <summary>
+    /// Represents a full size vulcan keyboard. Vulcan 100/120
+    /// </summary>
     public sealed class FullsizeKeyboard : AbstractVulcanKeyboard
     {
+        /// <inheritdoc/>
         public override KeyboardType KeyboardType => KeyboardType.Fullsize;
 
+        /// <inheritdoc/>
         protected override Dictionary<Key, int> Mapping => FullSizeKeyMapping.Mapping;
 
         internal FullsizeKeyboard(HidDevice ctrlDevice, HidDevice ledDevice)
             : base(ctrlDevice, ledDevice)
         { }
 
+        /// <inheritdoc/>
         protected override bool Initialize()
         {
             return

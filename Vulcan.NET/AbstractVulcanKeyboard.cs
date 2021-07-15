@@ -6,6 +6,7 @@ using System.Threading;
 
 namespace Vulcan.NET
 {
+    /// <inheritdoc/>
     public abstract class AbstractVulcanKeyboard : IVulcanKeyboard
     {
         private const int MaxTries = 100;
@@ -17,12 +18,19 @@ namespace Vulcan.NET
         private readonly HidStream _ctrlStream;
         private readonly byte[] _keyColors = new byte[444];//64 * 6 + 60
 
+        /// <inheritdoc/>
+        public IEnumerable<Key> Keys => Mapping.Keys;
+
+        /// <inheritdoc/>
         protected abstract Dictionary<Key, int> Mapping { get; }
 
+        /// <inheritdoc/>
         public abstract KeyboardType KeyboardType { get; }
 
+        /// <inheritdoc/>
         public bool IsConnected { get; private set; }
 
+        /// <inheritdoc/>
         protected AbstractVulcanKeyboard(HidDevice ctrlDevice, HidDevice ledDevice)
         {
             _ctrlDevice = ctrlDevice;
@@ -43,6 +51,7 @@ namespace Vulcan.NET
             IsConnected = true;
         }
 
+        /// <inheritdoc/>
         public void SetColor(byte r, byte g, byte b)
         {
             foreach (Key key in Mapping.Keys)
@@ -51,6 +60,7 @@ namespace Vulcan.NET
             }
         }
 
+        /// <inheritdoc/>
         public void SetKeyColor(Key key, byte r, byte g, byte b)
         {
             if (!Mapping.TryGetValue(key, out int keyIndex))
@@ -64,6 +74,7 @@ namespace Vulcan.NET
             _keyColors[offset + 24] = b;
         }
 
+        /// <inheritdoc/>
         public bool Update()
         {
             //structure of the data: 
@@ -117,6 +128,7 @@ namespace Vulcan.NET
             }
         }
 
+        /// <inheritdoc/>
         public void Dispose()
         {
             _ctrlStream?.Close();
@@ -124,8 +136,10 @@ namespace Vulcan.NET
             IsConnected = false;
         }
 
+        /// <inheritdoc/>
         protected abstract bool Initialize();
 
+        /// <inheritdoc/>
         protected bool GetCtrlReport(byte report_id)
         {
             int size = _ctrlDevice.GetMaxFeatureReportLength();
@@ -142,6 +156,7 @@ namespace Vulcan.NET
             }
         }
 
+        /// <inheritdoc/>
         protected bool SetCtrlReport(byte[] reportBuffer)
         {
             try
@@ -155,6 +170,7 @@ namespace Vulcan.NET
             }
         }
 
+        /// <inheritdoc/>
         protected bool WaitCtrlDevice()
         {
             int size = _ctrlDevice.GetMaxFeatureReportLength();
