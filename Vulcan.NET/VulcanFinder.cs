@@ -1,5 +1,6 @@
 ﻿using HidSharp;
 using HidSharp.Reports.Encodings;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -34,31 +35,24 @@ namespace Vulcan.NET
                 yield break;
             }
 
-            foreach (var distinctDeviceEntries in devices.GroupBy(d => d.DevicePath))
+            foreach ((int pid, KeyboardType kbType) in KeyboardDefinitions)
             {
-                foreach ((int pid, KeyboardType kbType) in KeyboardDefinitions)
+                var devicesWithPid = devices.Where(d => d.ProductID == pid);
+
+                var ctrlDevice = devicesWithPid.FirstOrDefault(d => d.GetMaxFeatureReportLength() > 50);
+                var ledDevice = devicesWithPid.FirstOrDefault(d => d.VerifyUsageAndUsagePage(LedUsagePage, LedUsage));
+
+                if (ctrlDevice == null || ledDevice == null)
+                    continue;
+
+                switch (kbType)
                 {
-                    //these have the same pid
-                    if (!distinctDeviceEntries.Any(dde => dde.ProductID == pid))
-                    {
-                        continue;
-                    }
-
-                    var ctrlDevice = distinctDeviceEntries.FirstOrDefault(d => d.GetMaxFeatureReportLength() > 50);
-                    var ledDevice = distinctDeviceEntries.FirstOrDefault(d => d.VerifyUsageAndUsagePage(LedUsagePage, LedUsage));
-
-                    if (ctrlDevice == null || ledDevice == null)
-                        continue;
-
-                    switch (kbType)
-                    {
-                        case KeyboardType.Fullsize:
-                            yield return new FullsizeKeyboard(ctrlDevice, ledDevice);
-                            break;
-                        case KeyboardType.Tenkeyless:
-                            yield return new TenkeylessKeyboard(ctrlDevice, ledDevice);
-                            break;
-                    }
+                    case KeyboardType.Fullsize:
+                        yield return new FullsizeKeyboard(ctrlDevice, ledDevice);
+                        break;
+                    case KeyboardType.Tenkeyless:
+                        yield return new TenkeylessKeyboard(ctrlDevice, ledDevice);
+                        break;
                 }
             }
         }
